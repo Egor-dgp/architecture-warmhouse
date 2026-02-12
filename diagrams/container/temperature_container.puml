@@ -1,0 +1,32 @@
+ ```kroki-plantuml
+@startuml
+
+title warmouse container temperature domain diagram
+
+!include C4_Container.puml
+
+Person(Client, "Пользователь умного дома", "Пользователь системы", "Человек")
+
+System_Boundary(TemperatureControlSystem, "Система управления температурой") {
+    Container(MobileApp, "Мобильное приложение", "Kotlin, Swift", "Мобильное приложение")
+    Container(Server, "Система развернутая на сервере", "Go", "Серверная часть")
+    Container(DeviceRequestDistributor, "Оркестратор запросов от устройств", "Go", "Оркестратор")
+    Container(TemperatureDeviceController, "Контроллер температуры", "Go", "Контроллер")
+}
+
+Container(Database, "База данных", "PostgreSQL", "Хранит данные")
+
+Rel(Client, MobileApp, "Смотрит актуальную информацию о температуре в помещении")
+Rel(Client, MobileApp, "Переключает с помещение а помещение")
+Rel(Client, MobileApp, "Выставляет нужную температуру")
+Rel(MobileApp, Server, "Получает актуальное состояние датчиков температуры для конкретного пользователя")
+Rel(MobileApp, Server, "Выполняет воздействие на конкретный датчик конкретного пользователя")
+Rel(Server, Database, "Получает данные о датчиках температуры по конкретному пользователю")
+Rel(DeviceRequestDistributor, TemperatureDeviceController, "Опрашивает датчик о его состоянии с конфигурированной периодичностью")
+Rel(DeviceRequestDistributor, TemperatureDeviceController, "Изменяет состояние датчика регулируя температуры")
+Rel(DeviceRequestDistributor, Server, "Отправляет данные о состоянии датчика")
+Rel(Server, DeviceRequestDistributor, "Отправляет запрос на воздействие на датчик")
+Rel(TemperatureDeviceController, ExternalDevice, "Управляет датчиками температуры")
+
+@enduml
+``` 
