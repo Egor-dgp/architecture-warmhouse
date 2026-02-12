@@ -1,0 +1,10 @@
+site_name: Architecture Documentation
+theme: readthedocs
+
+plugins:
+  - search
+  - kroki
+
+markdown_extensions:
+  - md_in_html
+  - pymdownx.superfences
