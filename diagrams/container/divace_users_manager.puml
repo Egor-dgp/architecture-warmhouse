@@ -1,0 +1,35 @@
+ ```kroki-plantuml
+@startuml
+title warmouse container manager domain diagram
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Person(Client, "Пользователь умного дома", "Клиент установивший себе приложение умного дома и покупающий подключаемые умные устройства")
+Person(Device, "Датчик который подключается к умному дому", "Датчик подключается к системе умного дома")
+
+Container_Boundary(TemperatureControlSystem, "Система управления устройствами и пользователями") {
+    Container(MobileApp, "Мобильное приложение", "Kotlin, Swift", "Мобильное приложение")
+    Container(inventory, "Бэкенд система управления пользователями и устройствами развернутая на сервере", "Go", "Серверная часть")
+    Container(Sys_Client, "Устройства пользователя", "Embeded", "Клиентская часть")
+    Container(Database, "База данных с данными об устройствах и пользователе и их состояниях", "PostgreSQL", "Шардированная БД по признаку управления пользователями")
+    Container(autorization_Service, "Сервис авторизующий пользователей", "keyclock", "Производит авторизацию и аутентификацию пользователей")
+}
+
+Rel(Client, MobileApp, "Регистрируется в приложении")
+Rel(MobileApp, autorization_Service, "отправляется запрос на регистрацию и создания токена авторизации")
+Rel(autorization_Service, Database, "отправляется запрос в базу на сохранения токена и кред")
+Rel(Client, MobileApp, "Аутентифицируется приложением и авторизуется в нем")
+Rel(MobileApp, autorization_Service, "Отправляется запрос на аутентификацию и авторизацию, возвращая токен авторизации")
+Rel(autorization_Service, Database, "Забирет токен по кредам")
+Rel(MobileApp, inventory, "Отправляется запрос обо всех утсройствах пользователя")
+Rel(Client, Device, "Подключает устройство к умному дому")
+Rel(Device, Sys_Client, "Подключает к маршрутизатору")
+Rel(Sys_Client, inventory, "Отправляет вебхук на создание нового устройства")
+Rel(inventory, MobileApp, "Отправляет вебсокет на подключение нового датчика")
+Rel(MobileApp, inventory, "авторизует устройство")
+Rel(inventory, Database, "Отправляет запрос в бд на создание нового устройства и привязки его к пользователю")
+
+@enduml
+``` 
