@@ -40,4 +40,5 @@
 ### 5. Визуализация контекста системы - диаграмма С4
 
 '''markdown
- [Диаграмма контеста] ()
+ [Диаграмма контеста] (https://github.com/Egor-dgp/architecture-warmhouse/blob/warmhouse/diagrams/context/context_domain.puml)
+ '''
