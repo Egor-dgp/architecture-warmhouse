@@ -1,0 +1,32 @@
+ ```kroki-plantuml
+@startuml
+title warmouse container video streaming domain diagram
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Person(Client, "Пользователь умного дома", "Клиент установивший себе приложение умного дома и покупающий подключаемые умные устройства")
+
+Container_Boundary(TemperatureControlSystem, "Система управления видео") {
+    Container(MobileApp, "Мобильное приложение", "Kotlin, Swift", "Мобильное приложение")
+    Container(Server, "Бэкенд система управления видео развернутая на сервере", "Go", "Серверная часть")
+    Container(Sys_Client, "Устройства пользователя", "Embeded", "Клиентская часть")
+    Container(Database, "База данных с данными об устройствах и пользователе и их состояниях", "PostgreSQL", "Шардированная БД по признаку функциии видео")
+    Container(Cloud, "Облако с временным хранением файлов", "S3", "Файлы уничтожаются по мере завершении сессии")
+}
+
+Rel(Client, MobileApp, "Смотрит превью с камер")
+Rel(Client, MobileApp, "Переключает с камеры на камеру")
+Rel(Client, MobileApp, "Запускает трансляцию видео с камеры")
+Rel(MobileApp, Server, "Получает актальную информацию о состоянии камер")
+Rel(Server, Database, "Получает ифно о камерах пользоваетля")
+Rel(Server, Sys_Client, "Получает актуальную информацию о состоянии камер")
+Rel(Sys_Client, Cloud, "Загружает Preview файл с картинкой для конкретной камеры в облако")
+Rel(MobileApp, Cloud, "Запрашивает Preview файл с конкретной камеры")
+Rel(MobileApp, Cloud, "Загружает Preview файл для конкретной камеры")
+Rel(Server, Sys_Client, "Инициализирует сессию трансляции видео")
+Rel(Sys_Client, Cloud, "Отправыляет виофайлы в S3")
+Rel(MobileApp, Cloud, "Загружает поочередно видео по время просмотра")
+@enduml
+``` 
