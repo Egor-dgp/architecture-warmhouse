@@ -1,3 +1,5 @@
+# Задание 1. Анализ и планирование
+
 ### 1. Описание функциональности монолитного приложения
 
 **Управление отоплением:**
@@ -42,3 +44,47 @@
 '''markdown
  [Диаграмма контеста] (https://github.com/Egor-dgp/architecture-warmhouse/blob/warmhouse/diagrams/context/context_domain.puml)
  '''
+
+ # Задание 2. Проектирование микросервисной архитектуры
+
+ **Диаграмма контейнеров (Containers)**
+
+ Диаграмма контейнеров для системы управления воротами
+
+ https://github.com/Egor-dgp/architecture-warmhouse/blob/warmhause/diagrams/container/%20gate_container.puml 
+
+Диаграмма контейнеров для ситсемы управления пользователями и их устройствами
+
+https://github.com/Egor-dgp/architecture-warmhouse/blob/warmhause/diagrams/container/divace_users_manager.puml
+
+Диаграмма контейнеров для системы управления светом
+
+https://github.com/Egor-dgp/architecture-warmhouse/blob/warmhause/diagrams/container/light_container.puml
+
+Диаграмма контейнеров для системы управления отоплением
+
+https://github.com/Egor-dgp/architecture-warmhouse/blob/warmhause/diagrams/container/temperature_container.puml
+
+Диаграмма контейнеров для системы управления видео наблюдением
+
+https://github.com/Egor-dgp/architecture-warmhouse/blob/warmhause/diagrams/container/video_container.puml
+
+**Диаграмма компонентов**
+
+Диаграмма компонентов сервиса управления воротами
+
+https://github.com/Egor-dgp/architecture-warmhouse/blob/warmhause/diagrams/component/component_gate.puml
+
+Диаграмма компонентов сервиса управления температурой
+
+https://github.com/Egor-dgp/architecture-warmhouse/blob/warmhause/diagrams/component/component_temperature.puml
+
+**Диаграмма кода**
+
+Диаграмма кода сервиса управления температурой
+
+https://github.com/Egor-dgp/architecture-warmhouse/blob/warmhause/diagrams/code/code_temperature.puml
+
+# Задание 3. Разработка ER-Диаграммы 
+
+

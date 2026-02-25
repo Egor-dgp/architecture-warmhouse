@@ -1,0 +1,60 @@
+@startuml
+
+'Настройка отображения
+hide circle
+skinparam Linetype ortho
+
+'Сущности 
+
+entity "Пользователь" as user {
+    *id: int
+    ---
+    name: varchar
+    email: varchar
+    phone: varchar
+}
+
+entity "Тип устройства" as device_type {
+    *id: int
+    ---
+    name: enum
+}
+    
+entity "Устройство" as  device {
+    *id: int
+    ---
+    name: varchar
+    serial_number: int
+    device_type: enum
+    home_id: int
+    device_status: enum
+}
+
+entity "Дом" as home {
+    *id: int
+    ---
+    user_id:
+}
+
+entity "Помещение" as room {
+    *id: int
+    ---
+    home_id: int
+    room_type: enum
+    room_number: int
+}
+
+entity "Телеметрия" as telemetry {
+    *id: int
+    ---
+    device_id: int
+    device_params: json
+}
+
+user ||--o{ home: "Пользователь добавляет дом"
+home ||--o{ room: "В дом добаляется помещение"
+room ||--o{ device: "В помещение добавляется устройство"
+device_type ||--o{ device: "Устройство относится к типу"
+device ||--o{ telemetry: "Телеметрия относится к данному устройству"
+
+@enduml
