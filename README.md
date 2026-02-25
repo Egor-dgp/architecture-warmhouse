@@ -87,4 +87,8 @@ https://github.com/Egor-dgp/architecture-warmhouse/blob/warmhause/diagrams/code/
 
 # Задание 3. Разработка ER-Диаграммы 
 
+ER Диаграмма
 
+https://github.com/Egor-dgp/architecture-warmhouse/blob/warmhouse/diagrams/ER/ER.puml
+
+# Задание 4. Создание и документирование API

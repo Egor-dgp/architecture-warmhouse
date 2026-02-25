@@ -1,0 +1,306 @@
+openapi: 3.0.3
+info:
+  title: Smart Home — Temperature & Lighting API
+  version: 1.0.0
+  description: >
+    API для управления температурой и светом в умном доме.
+    Идентификация ресурсов производится через userId, homeId и roomId.
+servers:
+  - url: https://api.example.com/v1
+    description: Production server
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    userId:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Идентификатор пользователя (владелец дома)
+    homeId:
+      name: homeId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Идентификатор дома
+    roomId:
+      name: roomId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Идентификатор комнаты в доме
+
+  schemas:
+    TemperatureState:
+      type: object
+      properties:
+        roomId:
+          type: string
+        currentCelsius:
+          type: number
+          format: float
+          description: Текущая температура в градусах Цельсия
+        targetCelsius:
+          type: number
+          format: float
+          nullable: true
+          description: Целевая температурa (если установлена)
+        sensorEnabled:
+          type: boolean
+          description: Включён ли датчик температуры
+        updatedAt:
+          type: string
+          format: date-time
+
+    TemperatureSetRequest:
+      type: object
+      required:
+        - targetCelsius
+      properties:
+        targetCelsius:
+          type: number
+          format: float
+          description: Желаемая температура в градусах Цельсия
+        until:
+          type: string
+          format: date-time
+          nullable: true
+          description: Опционально — время, до которого действует установка (UTC)
+
+    SensorActionRequest:
+      type: object
+      required:
+        - action
+      properties:
+        action:
+          type: string
+          enum: [disable, enable]
+          description: Действие над датчиком
+
+    LightState:
+      type: object
+      properties:
+        roomId:
+          type: string
+        isOn:
+          type: boolean
+          description: Текущий статус света
+        brightness:
+          type: integer
+          minimum: 0
+          maximum: 100
+          nullable: true
+          description: Процент яркости, если применимо
+        color:
+          type: string
+          nullable: true
+          description: Цвет в hex или имя, если поддерживается
+        updatedAt:
+          type: string
+          format: date-time
+
+    LightActionRequest:
+      type: object
+      required:
+        - action
+      properties:
+        action:
+          type: string
+          enum: [turn_on, turn_off, set_brightness, set_color]
+        brightness:
+          type: integer
+          minimum: 0
+          maximum: 100
+          nullable: true
+        color:
+          type: string
+          nullable: true
+        duration:
+          type: integer
+          nullable: true
+          description: Время в секундах для эффекта или таймера
+
+  responses:
+    Unauthorized:
+      description: Требуется аутентификация (JWT)
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+    NotFound:
+      description: Ресурс не найден
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+
+paths:
+  /users/{userId}/homes/{homeId}/rooms/{roomId}/temperature:
+    get:
+      summary: Получить текущее состояние температуры в комнате
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - $ref: '#/components/parameters/homeId'
+        - $ref: '#/components/parameters/roomId'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Состояние температуры
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemperatureState'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      summary: Установить целевую температуру в комнате
+      description: Устанавливает targetCelsius; если датчик выключен — вернёт ошибку.
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - $ref: '#/components/parameters/homeId'
+        - $ref: '#/components/parameters/roomId'
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemperatureSetRequest'
+            examples:
+              set-temp:
+                value:
+                  targetCelsius: 22.5
+      responses:
+        '200':
+          description: Новое состояние температуры
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemperatureState'
+        '400':
+          description: Неправильные данные запроса
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /users/{userId}/homes/{homeId}/rooms/{roomId}/temperature/sensor:
+    post:
+      summary: Выполнить действие над датчиком температуры (включить/выключить)
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - $ref: '#/components/parameters/homeId'
+        - $ref: '#/components/parameters/roomId'
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SensorActionRequest'
+            examples:
+              disable:
+                value:
+                  action: disable
+      responses:
+        '200':
+          description: Состояние датчика после выполнения
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sensorEnabled:
+                    type: boolean
+                  message:
+                    type: string
+        '400':
+          description: Неправильное действие
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /users/{userId}/homes/{homeId}/rooms/{roomId}/light:
+    get:
+      summary: Получить состояние света в комнате
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - $ref: '#/components/parameters/homeId'
+        - $ref: '#/components/parameters/roomId'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Состояние света
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LightState'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      summary: Управление светом — включить/выключить, установить яркость/цвет
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - $ref: '#/components/parameters/homeId'
+        - $ref: '#/components/parameters/roomId'
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LightActionRequest'
+            examples:
+              turn-on:
+                value:
+                  action: turn_on
+              turn-off:
+                value:
+                  action: turn_off
+              set-brightness:
+                value:
+                  action: set_brightness
+                  brightness: 75
+      responses:
+        '200':
+          description: Новое состояние света
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LightState'
+        '400':
+          description: Неправильные параметры управления (напр., brightness вне диапазона)
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
