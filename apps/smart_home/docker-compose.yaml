@@ -1,0 +1,23 @@
+version: "3.8"                        # версия формата docker-compose
+services:
+  smart_db:
+    image: postgres:15                # образ Postgres
+    environment:
+      POSTGRES_DB: smart_home_db      # имя БД по умолчанию
+      POSTGRES_USER: smart_user       # пользователь
+      POSTGRES_PASSWORD: smart_pass   # пароль
+    volumes:
+      - ./smart_home/init.sql:/docker-entrypoint-initdb.d/init.sql:ro # инициализационный SQL
+    ports:
+      - "5432:5432"                   # прокидываем порт (опционально)
+
+  smarthome:
+    build:
+      context: ./apps/smart_home      # контекст сборки
+    environment:
+      DATABASE_URL: postgres://smart_user:smart_pass@smart_db:5432/smart_home_db?sslmode=disable # строка подключения
+      PORT: "8080"                    # порт приложения
+    ports:
+      - "8080:8080"                   # пробрасываем порт для доступа с хоста
+    depends_on:
+      - smart_db                      # контейнер приложения зависит от БД
