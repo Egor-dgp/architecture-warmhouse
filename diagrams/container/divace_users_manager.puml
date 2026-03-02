@@ -1,5 +1,5 @@
- ```kroki-plantuml
 @startuml
+
 title warmouse container manager domain diagram
 
 top to bottom direction
@@ -32,4 +32,3 @@ Rel(MobileApp, inventory, "авторизует устройство")
 Rel(inventory, Database, "Отправляет запрос в бд на создание нового устройства и привязки его к пользователю")
 
 @enduml
-``` 

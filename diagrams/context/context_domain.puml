@@ -1,7 +1,10 @@
-```kroki-plantuml
 @startuml 
 
-!include plantuml/C4_Component.puml
+title warmouse context diagram
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
 
 Person(P, "Клиент")
 System(S1, "Система управления воротами")
@@ -17,10 +20,9 @@ Rel(P,S2, "Запускает трансляцию с видеокамеры")
 Rel(P,S3, "Переключает на другое помещение")
 Rel(P,S3, "Включает/Отключает отопление")
 Rel(S3,P, "Передает телеметрию о температуре")
-Rel(P,S4 "Регистрируется")
-Rel(P,S4 "Подключает новое устройство")
+Rel(P,S4, "Регистрируется")
+Rel(P,S4, "Подключает новое устройство")
 Rel(P,S5, "Выключает/Включает свет")
 Rel(S5,P, "Передает телеметрию о свете")
 
 @enduml
-``` 
