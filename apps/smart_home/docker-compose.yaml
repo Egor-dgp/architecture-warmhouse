@@ -1,0 +1,23 @@
+services:
+  smart_db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: smart_home_db
+      POSTGRES_USER: smart_user
+      POSTGRES_PASSWORD: smart_pass
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+
+  smarthome:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgres://smart_user:smart_pass@smart_db:5432/smart_home_db?sslmode=disable
+      PORT: "8081"
+    ports:
+      - "8081:8081"
+    depends_on:
+      - smart_db

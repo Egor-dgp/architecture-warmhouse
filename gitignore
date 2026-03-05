@@ -1,0 +1,27 @@
+# VCS и системные метаданные
+.git
+.gitignore
+
+# macOS
+.DS_Store
+
+# IDE/Editor
+.vscode
+.idea
+
+# временные и сборочные каталоги
+node_modules
+dist
+build
+tmp
+
+# логи, артефакты
+*.log
+*.tmp
+
+# локальные среды/секреты
+.env
+.env.* 
+
+# Dockerfile и образные артефакты (если есть каталоги)
+.dockerignore

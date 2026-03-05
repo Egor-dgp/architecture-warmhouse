@@ -1,0 +1,25 @@
+@startuml
+title warmouse container gate domain diagram
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Person(Client, "Пользователь умного дома", "Клиент установивший себе приложение умного дома и покупающий подключаемые умные устройства")
+
+Container_Boundary(GateControlSystem, "Система управления воротами") {
+    Container(MobileApp, "Мобильное приложение", "Kotlin, Swift", "Мобильное приложение")
+    Container(Server, "Бэкенд система управления воротами развернутая на сервере", "Go", "Серверная часть")
+    Container(Sys_Client, "Устройства пользователя", "Embeded", "Клиентская часть")
+    Container(Database, "База данных с данными об устройствах и пользователе и их состояниях", "PostgreSQL", "Шардированная БД по признаку функции открытия ворот")
+}
+
+Rel(Client, MobileApp, "Смотрит актуальную информацию о сотсоянии ворот")
+Rel(Client, MobileApp, "Открывает ворота")
+Rel(Client, MobileApp, "Закрывает ворота")
+Rel(MobileApp, Server, "Получает актуальное состояние ворот")
+Rel(MobileApp, Server, "Выполняет воздействие на конкретный датчик конкретного пользователя")
+Rel(Server, Database, "Получает данные о датчиках теворот мпертуры по конкретному пользователю")
+Rel(Server, Sys_Client, "Отправляет запрос воздействие")
+Rel(Sys_Client, Server, "Отправляет вебхук о состоянии датчиков")
+@enduml

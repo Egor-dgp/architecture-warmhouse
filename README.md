@@ -1,1 +1,96 @@
-# architecture-warmhouse
+# Задание 1. Анализ и планирование
+
+### 1. Описание функциональности монолитного приложения
+
+**Управление отоплением:**
+
+-Пользователи могут: Выставлять нужную температуру
+-Система поддерживает:  Воздействие на реле по выставлению нужного показателя температуры
+
+**Мониторинг температуры**
+
+-Пользователи могут: Мониторить температуру 
+-Система поддерживает: Функциою дистанционного мониторинга показателей температурных датчиков
+
+### 2. Анализ архитетуры монолитного приложения
+
+Текущее решение включает в себя приложение написанное на Go, которое формирует и обрабатывает запросы синхронно как к устройствам так и к БД. СУБД Postgres.
+
+### 3. Определение доменов и границы контекстов
+
+- Домен управления воротами
+    - Поддомен телеметрии 
+    - Поддомен воздействия
+- Домен управления видеонаблюдением
+    - Поддомен стримминга
+- Домен упралвения температурой
+    - Поддомен телеметрии
+    - Поддомен воздействия
+- Домен управления пользователями и устройствами
+    - Поддомен подключения новых устройств
+    - Поддомен подключения новых клиентов
+- Домен управления светом
+    - Поддомен телеметрии
+    - Поддомен воздействия
+
+### **4. Проблемы монолитного решения**
+
+- Не маштабируемость. Из-за того что вызовы все синхронные, увеличение трафика сообщений нименуемо приведет к замедлению рабоыт системы, поскольку запросы будут отбрабатываться поочередно
+- Не достаточная отказоустойчивость. Сбой в одном месте приложения останавливает работу всей системы целиком
+- Не гибкая эксплуатация. Деплой одной маленькой функции останавливает на время работы всех отсальных, поскольку приходится пересобирать приложение целиком
+
+### 5. Визуализация контекста системы - диаграмма С4
+
+'''markdown
+ [Диаграмма контеста] (https://github.com/Egor-dgp/architecture-warmhouse/blob/warmhouse/diagrams/context/context_domain.puml)
+ '''
+
+ # Задание 2. Проектирование микросервисной архитектуры
+
+ **Диаграмма контейнеров (Containers)**
+
+ Диаграмма контейнеров для системы управления воротами
+
+ https://github.com/Egor-dgp/architecture-warmhouse/blob/warmhause/diagrams/container/%20gate_container.puml 
+
+Диаграмма контейнеров для ситсемы управления пользователями и их устройствами
+
+https://github.com/Egor-dgp/architecture-warmhouse/blob/warmhause/diagrams/container/divace_users_manager.puml
+
+Диаграмма контейнеров для системы управления светом
+
+https://github.com/Egor-dgp/architecture-warmhouse/blob/warmhause/diagrams/container/light_container.puml
+
+Диаграмма контейнеров для системы управления отоплением
+
+https://github.com/Egor-dgp/architecture-warmhouse/blob/warmhause/diagrams/container/temperature_container.puml
+
+Диаграмма контейнеров для системы управления видео наблюдением
+
+https://github.com/Egor-dgp/architecture-warmhouse/blob/warmhause/diagrams/container/video_container.puml
+
+**Диаграмма компонентов**
+
+Диаграмма компонентов сервиса управления воротами
+
+https://github.com/Egor-dgp/architecture-warmhouse/blob/warmhause/diagrams/component/component_gate.puml
+
+Диаграмма компонентов сервиса управления температурой
+
+https://github.com/Egor-dgp/architecture-warmhouse/blob/warmhause/diagrams/component/component_temperature.puml
+
+**Диаграмма кода**
+
+Диаграмма кода сервиса управления температурой
+
+https://github.com/Egor-dgp/architecture-warmhouse/blob/warmhause/diagrams/code/code_temperature.puml
+
+# Задание 3. Разработка ER-Диаграммы 
+
+ER Диаграмма
+
+https://github.com/Egor-dgp/architecture-warmhouse/blob/warmhouse/diagrams/ER/ER.puml
+
+# Задание 4. Создание и документирование API
+
+https://github.com/Egor-dgp/architecture-warmhouse/blob/warmhouse/apps/open-api.json

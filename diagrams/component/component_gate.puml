@@ -1,0 +1,177 @@
+@startuml
+' convert it with additional command line argument -DRELATIVE_INCLUDE="relative/absolute" to use locally
+!if %variable_exists("RELATIVE_INCLUDE")
+  !include ./C4_Container.puml
+!else
+  !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!endif
+
+' Scope: A single container.
+' Primary elements: Components within the container in scope.
+' Supporting elements: Containers (within the software system in scope) plus people and software systems directly connected to the components.
+' Intended audience: Software architects and developers.
+
+' Colors
+' ##################################
+
+!$COMPONENT_FONT_COLOR ?= "#000000"
+!$COMPONENT_BG_COLOR ?= "#85BBF0"
+!$COMPONENT_BORDER_COLOR ?= "#78A8D8"
+
+!$EXTERNAL_COMPONENT_LEGEND_TEXT ?= "external component"
+!$EXTERNAL_COMPONENT_FONT_COLOR ?= $COMPONENT_FONT_COLOR
+!$EXTERNAL_COMPONENT_BG_COLOR ?= "#CCCCCC"
+!$EXTERNAL_COMPONENT_BORDER_COLOR ?= "#BFBFBF"
+
+' New C4 style automatically swaps font and background colors, but with those settings the component/node background would be black.
+' Therefore the colors should be displayed unchanged (the init colors have to be swapped too).
+!$NEW_C4_USE_ORIGINAL_COMPONENT_COLORS ?= 1
+!$componentColorsSwappedAlready ?= 0
+!if (NEW_C4_STYLE == 1 && $NEW_C4_USE_ORIGINAL_COMPONENT_COLORS == 1 && $componentColorsSwappedAlready == 0)
+  !$swap=$COMPONENT_BG_COLOR
+  !$COMPONENT_BG_COLOR=$COMPONENT_FONT_COLOR
+  !$COMPONENT_FONT_COLOR=$swap
+  !$swap=$EXTERNAL_COMPONENT_BG_COLOR
+  !$EXTERNAL_COMPONENT_BG_COLOR=$EXTERNAL_COMPONENT_FONT_COLOR
+  !$EXTERNAL_COMPONENT_FONT_COLOR=$swap
+  ' don't swap them again below if C4_... included again
+  !$componentColorsSwappedAlready=1
+!endif
+
+' Labels
+' ##################################
+
+!$COMPONENT_LEGEND_TEXT ?= "component"
+!$EXTERNAL_COMPONENT_LEGEND_TEXT ?= "external component"
+
+' Styling
+' ##################################
+
+UpdateElementStyle("component", $COMPONENT_BG_COLOR, $COMPONENT_FONT_COLOR, $COMPONENT_BORDER_COLOR, $shape=$DEFAULT_SHAPE, $legendText="$COMPONENT_LEGEND_TEXT")
+UpdateElementStyle("external_component", $EXTERNAL_COMPONENT_BG_COLOR, $EXTERNAL_COMPONENT_FONT_COLOR, $EXTERNAL_COMPONENT_BORDER_COLOR, $shape=$DEFAULT_SHAPE, $legendText="$EXTERNAL_COMPONENT_LEGEND_TEXT")
+
+' shortcuts with default colors
+!unquoted procedure AddComponentTag($tagStereo, $bgColor="", $fontColor="", $borderColor="", $shadowing="", $shape="", $sprite="", $techn="", $legendText="", $legendSprite="", $borderStyle="", $borderThickness="")
+  $addElementTagInclReuse("component", $tagStereo, $bgColor, $fontColor, $borderColor, $shadowing, $shape, $sprite, $techn, $legendText, $legendSprite, $borderStyle, $borderThickness)
+!endprocedure
+!unquoted procedure AddExternalComponentTag($tagStereo, $bgColor="", $fontColor="", $borderColor="", $shadowing="", $shape="", $sprite="", $techn="", $legendText="", $legendSprite="", $borderStyle="", $borderThickness="")
+  $addElementTagInclReuse("external_component", $tagStereo, $bgColor, $fontColor, $borderColor, $shadowing, $shape, $sprite, $techn, $legendText, $legendSprite, $borderStyle, $borderThickness)
+!endprocedure
+
+' Layout
+' ##################################
+
+SetDefaultLegendEntries("person\nsystem\ncontainer\ncomponent\nexternal_person\nexternal_system\nexternal_container\nexternal_component\nenterprise_boundary\nsystem_boundary\ncontainer_boundary\nboundary")
+
+!procedure LAYOUT_WITH_LEGEND()
+hide stereotype
+legend right
+|<color:$LEGEND_TITLE_COLOR>**Legend**</color> |
+|<$PERSON_BG_COLOR> person |
+|<$SYSTEM_BG_COLOR> system |
+|<$CONTAINER_BG_COLOR> container |
+|<$COMPONENT_BG_COLOR> component |
+|<$EXTERNAL_PERSON_BG_COLOR> external person |
+|<$EXTERNAL_SYSTEM_BG_COLOR> external system |
+|<$EXTERNAL_CONTAINER_BG_COLOR> external container |
+|<$EXTERNAL_COMPONENT_BG_COLOR> external component |
+endlegend
+!endprocedure
+
+' Elements
+' ##################################
+
+!unquoted procedure Component($alias, $label, $techn="", $descr="", $sprite="", $tags="", $link="", $baseShape="rectangle")
+  $getElementLine($baseShape, "component", $alias, $label, $techn, $descr, $sprite, $tags, $link)
+!endprocedure
+
+!unquoted procedure ComponentDb($alias, $label, $techn="", $descr="", $sprite="", $tags="", $link="")
+  $getElementLine("database", "component", $alias, $label, $techn, $descr, $sprite, $tags, $link)
+!endprocedure
+
+!unquoted procedure ComponentQueue($alias, $label, $techn="", $descr="", $sprite="", $tags="", $link="")
+  $getElementLine("queue", "component", $alias, $label, $techn, $descr, $sprite, $tags, $link)
+!endprocedure
+
+!unquoted procedure Component_Ext($alias, $label, $techn="", $descr="", $sprite="", $tags="", $link="", $baseShape="rectangle")
+  $getElementLine($baseShape, "external_component", $alias, $label, $techn, $descr, $sprite, $tags, $link)
+!endprocedure
+
+!unquoted procedure ComponentDb_Ext($alias, $label, $techn="", $descr="", $sprite="", $tags="", $link="")
+  $getElementLine("database", "external_component", $alias, $label, $techn, $descr, $sprite, $tags, $link)
+!endprocedure
+
+!unquoted procedure ComponentQueue_Ext($alias, $label, $techn="", $descr="", $sprite="", $tags="", $link="")
+  $getElementLine("queue", "external_component", $alias, $label, $techn, $descr, $sprite, $tags, $link)
+!endprocedure
+
+' ============================================
+' ДИАГРАММА КОМПОНЕНТОВ СИСТЕМЫ УПРАВЛЕНИЯ ВОРОТАМИ
+' ============================================
+
+title Компонентная диаграмма системы управления воротами
+
+' Определение границ системы
+System_Boundary(система_ворот, "Система управления воротами") {
+  
+  ' Основные компоненты системы
+  Component(контроллер_датчик, "Контроллер датчика ворот", "IoT контроллер", "Считывает состояние датчиков ворот (открыто/закрыто/сломано)")
+  
+  Component(лот_маршрутизатор, "LoRaWAN/IoT маршрутизатор", "LoRaWAN Gateway", "Принимает данные от контроллера и отправляет в облако")
+  
+  ComponentQueue(очередь_телеметрии, "Очередь телеметрии", "RabbitMQ/Kafka", "Буферизация данных о состоянии ворот")
+  
+  Component(сервис_ворот, "Сервис управления воротами", "REST API, Python/Go", "Обрабатывает данные о состоянии ворот, управляет открытием/закрытием")
+  
+  ComponentDb(база_данных, "База данных состояний", "PostgreSQL", "Хранение истории состояний ворот и событий")
+  
+  Component(веб_клиент, "Веб-клиент", "React/Vue.js", "Пользовательский интерфейс для управления воротами")
+}
+
+' Внешние компоненты
+Component_Ext(внешний_вебхук, "Внешний вебхук API", "Webhook endpoint", "API для получения событий от IoT маршрутизатора")
+
+Component_Ext(внешнее_устройство, "Внешнее устройство", "Mobile App", "Мобильное приложение для управления воротами")
+
+' Связи между компонентами
+Rel(контроллер_датчик, лот_маршрутизатор, "Отправляет телеметрию", "LoRaWAN/MQTT")
+Rel(лот_маршрутизатор, контроллер_датчик, "Отправляет команду об открытии/закрытии ворот", "MQTTCommand")
+Rel(лот_маршрутизатор, очередь_телеметрии, "Публикует данные", "AMQP/MQTT")
+Rel(очередь_телеметрии, сервис_ворот, "Потребляет события", "AMQP Consumer")
+Rel(сервис_ворот, база_данных, "Сохраняет/читает данные", "SQL")
+Rel(сервис_ворот, веб_клиент, "Предоставляет API", "REST/WebSocket")
+Rel(веб_клиент, сервис_ворот, "Запросы состояния/управления/контекста", "HTTP/WebSocket")
+
+' Связи с внешними компонентами
+Rel(лот_маршрутизатор, внешний_вебхук, "Отправляет события открытия", "HTTP POST")
+Rel(внешнее_устройство, сервис_ворот, "Запросы на открытие/закрытие", "REST API")
+Rel(сервис_ворот, лот_маршрутизатор, "Команды управления", "HTTP/MQTT")
+
+' Описание потоков данных
+note right of контроллер_датчик
+  1. Считывает состояние датчиков
+  2. Определяет: открыто/закрыто/сломано
+  3. Отправляет телеметрию каждые N секунд
+end note
+
+note right of лот_маршрутизатор
+  1. Принимает данные от контроллера
+  2. Публикует в очередь телеметрии
+  3. Отправляет вебхук при событии открытия
+end note
+
+note right of сервис_ворот
+  1. Обрабатывает телеметрию из очереди
+  2. Обновляет состояние в БД
+  3. Уведомляет клиентов об изменениях
+  4. Обрабатывает команды управления
+end note
+
+note left of база_данных
+  1. Отдает контекст по устройствам для конкретного пользователя 
+  2. Пишет данные для истории 
+end note
+
+LAYOUT_WITH_LEGEND()
+
+@enduml

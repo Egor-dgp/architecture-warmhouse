@@ -1,0 +1,238 @@
+@startuml
+' === Общее оформление ===
+skinparam classAttributeIconSize 0
+
+' === Пакеты/слои ===
+package "API / HTTP Layer" {
+  class HttpHandler {
+    +HandleCreate(request: CreateDTO): ResponseDTO
+    +HandleGet(id: UUID): ResponseDTO
+  }
+  interface IValidator <<interface>> {
+    +ValidateCreate(dto: CreateDTO): ValidationResult
+  }
+  class AuthMiddleware {
+    +Authenticate(req): UserContext
+    +Authorize(ctx, action): bool
+  }
+}
+
+package "Service / Application Layer" {
+  interface IAppService <<interface>> {
+    +Create(ctx, dto: CreateDTO): ResponseDTO
+    +Get(ctx, id: UUID): ResponseDTO
+  }
+  class AppService {
+    -repo: IRepository
+    -cache: ICache
+    -publisher: IEventPublisher
+    -notifier: INotifier
+    -tracer: ITracer
+    +Create(ctx, dto: CreateDTO): ResponseDTO
+    +Get(ctx, id: UUID): ResponseDTO
+  }
+  class BusinessRule {
+    +Apply(entity: Entity): Entity
+  }
+}
+
+package "Repository / Persistence (Postgres)" {
+  interface IRepository <<interface>> {
+    +Save(ctx, e: Entity): Entity
+    +FindById(ctx, id: UUID): Entity
+    +BeginTx(ctx)
+    +CommitTx(ctx)
+    +RollbackTx(ctx)
+  }
+  class PostgresRepository {
+    -db: DBConnection
+    +Save(ctx, e: Entity): Entity
+    +FindById(ctx, id: UUID): Entity
+  }
+  class OutboxRepository {
+    +Enqueue(ctx, event: OutboxEvent): void
+    +MarkSent(id: UUID): void
+  }
+}
+
+package "Message Queue / Kafka" {
+  interface IEventPublisher <<interface>> {
+    +Publish(ctx, evt: DomainEvent): error
+  }
+  class KafkaPublisher {
+    -producer: KafkaProducer
+    +Publish(ctx, evt: DomainEvent): error
+  }
+  class KafkaConsumer {
+    +Start(ctx): void
+    +onMessage(msg): void
+  }
+  class OutboxWorker {
+    +Run(ctx): void
+  }
+}
+
+package "Cache (Redis)" {
+  interface ICache <<interface>> {
+    +Get(key: string): Optional<Entity>
+    +Set(key: string, value: Entity, ttl: Duration)
+    +Invalidate(key: string)
+  }
+  class RedisCache {
+    -client: RedisClient
+    +Get(key: string): Optional<Entity>
+    +Set(key: string, value: Entity, ttl: Duration)
+    +Invalidate(key: string)
+  }
+}
+
+package "Notifier / WebSocket" {
+  interface INotifier <<interface>> {
+    +Notify(userId: UUID, payload: NotificationPayload)
+  }
+  class WebSocketHub {
+    +Broadcast(channel: string, msg: NotificationPayload)
+    +SendTo(userId: UUID, msg: NotificationPayload)
+  }
+  class WSNotifier {
+    -hub: WebSocketHub
+    +Notify(userId, payload)
+  }
+}
+
+package "Auth / Middleware / Rate limiter" {
+  class TokenService {
+    +Verify(token): UserClaims
+    +Issue(claims): token
+  }
+  class RateLimiter {
+    +Allow(key): bool
+  }
+}
+
+package "Observability / Telemetry" {
+  interface ITracer <<interface>> {
+    +StartSpan(name): Span
+  }
+  class Tracing {
+    +StartSpan(name): Span
+  }
+  class Metrics {
+    +Inc(name)
+    +HistogramObserve(name, value)
+  }
+  class Logger {
+    +Info(msg)
+    +Error(msg)
+  }
+}
+
+package "Domain / Models / DTOs" {
+  class Entity {
+    +id: UUID
+    +createdAt: Time
+    +updatedAt: Time
+    +ApplyBusinessRules(): void
+  }
+  class CreateDTO {
+    +name: string
+    +payload: map
+  }
+  class ResponseDTO {
+    +id: UUID
+    +name: string
+    +payload: map
+  }
+  class DomainEvent {
+    +eventId: UUID
+    +type: string
+    +data: map
+    +occurredAt: Time
+  }
+  class OutboxEvent {
+    +id: UUID
+    +payload: DomainEvent
+    +status: string
+    +createdAt: Time
+  }
+  class ValidationResult {
+    +ok: bool
+    +errors: list
+  }
+  class NotificationPayload {
+    +title: string
+    +body: string
+    +meta: map
+  }
+}
+
+' === Отношения между классами/интерфейсами ===
+' API -> Service
+HttpHandler --> IValidator : uses
+HttpHandler --> IAppService : calls
+AuthMiddleware --> TokenService : uses
+AuthMiddleware --> RateLimiter : uses
+HttpHandler ..> AuthMiddleware : applied by
+
+' Service -> Repos / Cache / Publisher / Notifier
+AppService ..|> IAppService
+AppService --> IRepository : repo
+AppService --> ICache : cache
+AppService --> IEventPublisher : publisher
+AppService --> INotifier : notifier
+AppService --> ITracer : tracer
+AppService --> BusinessRule : uses
+
+' Repository implementations
+PostgresRepository ..|> IRepository
+OutboxRepository --> PostgresRepository : uses DB
+
+' Outbox pattern
+AppService --> OutboxRepository : enqueue OutboxEvent (in tx)
+OutboxWorker --> OutboxRepository : read unsent
+OutboxWorker --> IEventPublisher : publish and mark sent
+
+' Kafka components
+KafkaPublisher ..|> IEventPublisher
+KafkaConsumer --> IAppService : dispatch messages -> service
+
+' Cache
+RedisCache ..|> ICache
+AppService --> RedisCache : cache operations
+
+' Notifier
+WSNotifier ..|> INotifier
+WSNotifier --> WebSocketHub : uses
+AppService --> WSNotifier : notify users
+
+' Observability
+AppService --> ITracer
+HttpHandler --> Tracing
+KafkaConsumer --> Tracing
+OutboxWorker --> Tracing
+AnyLogger = Logger
+AppService --> Logger
+HttpHandler --> Logger
+KafkaConsumer --> Logger
+
+' Domain relations
+AppService --> Entity : creates/updates
+CreateDTO --> Entity : transforms to
+Entity --> DomainEvent : emits
+
+' Additional associations for clarity
+PostgresRepository ..> Entity : persists
+IRepository ..> OutboxEvent : may persist
+OutboxEvent --> DomainEvent : contains
+
+' Stereotypes / notes
+note left of OutboxRepository
+  Outbox table co-located with domain DB.
+  Enqueue happens inside DB transaction.
+end note
+
+note right of OutboxWorker
+  Worker polls Outbox table and publishes to Kafka reliably.
+end note
+
+@enduml
