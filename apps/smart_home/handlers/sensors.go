@@ -9,9 +9,8 @@ import (
 
 	"github.com/gorilla/mux" // роутер для параметров пути
 
-	"smarthome/apps/smart_home/models"   // модели
-	"smarthome/apps/smart_home/services" // сервисы
-	"smarthome/apps/smart_home/db"       // доступ к БД (для ошибок и т.п.)
+	"smart_home/services" // сервисы
+	"smart_home/db"       // доступ к БД (для ошибок и т.п.)
 )
 
 // Handlers — содержит зависимости для HTTP-обработчиков

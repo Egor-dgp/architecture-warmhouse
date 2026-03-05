@@ -5,7 +5,7 @@ import (
 	"fmt"     // для форматированных ошибок
 	"time"    // для работы со временем
 
-	"smarthome/apps/smart_home/models" // локальный импорт моделей
+	"smart_home/models" // локальный импорт моделей
 
 	"github.com/jackc/pgx/v5/pgxpool" // pgxpool — пул соединений для Postgres
 )

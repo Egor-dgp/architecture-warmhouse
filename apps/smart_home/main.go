@@ -1,17 +1,17 @@
 package main // основной пакет исполняемого файла
 
 import (
-	"context" // контексты для подключения
-	"log"     // логирование
-	"net/http"// HTTP сервер
-	"os"      // чтение переменных окружения
-	"time"    // таймауты
+	"context"
+	"log"
+	"net/http"
+	"os"
+	"time"
 
-	"github.com/gorilla/mux" // роутер
+	"github.com/gorilla/mux"
 
-	"smarthome/apps/smart_home/db"     // слой доступа к БД
-	"smarthome/apps/smart_home/handlers" // HTTP-обработчики
-	"smarthome/apps/smart_home/services" // сервисы
+	"smart_home/db"      // измените с "smart_home/apps/smart_home/db"
+	"smart_home/handlers" // измените с "smart_home/apps/smart_home/handlers"
+	"smart_home/services" // измените с "smart_home/apps/smart_home/services"
 )
 
 func main() {
@@ -25,7 +25,7 @@ func main() {
 	// Создаём подключение к БД с контекстом и таймаутом
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	dbConn, err := db.New(connStr)
+	dbConn, err := db.NewWithContext(ctx, connStr)
 	if err != nil {
 		log.Fatalf("failed to connect to db: %v", err) // фатал при ошибке подключения
 	}

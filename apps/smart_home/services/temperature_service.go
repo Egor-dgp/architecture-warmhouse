@@ -5,8 +5,8 @@ import (
 	"math/rand" // генератор случайных чисел
 	"time"      // время для измерений и сидирования
 
-	"smarthome/apps/smart_home/db"     // репозиторий/слой доступа к БД
-	"smarthome/apps/smart_home/models" // модели
+	"smart_home/db"     // репозиторий/слой доступа к БД
+	"smart_home/models" // модели
 )
 
 // TemperatureService — сервис для генерации и сохранения температур
